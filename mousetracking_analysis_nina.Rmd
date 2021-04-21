@@ -1,0 +1,48 @@
+---
+title: "Mousetracking Analysis"
+author: "Nina Illum"
+date: "21/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+install.packages("mousetrap")
+pacman::p_load(mousetrap, tidyverse, ggplot2)
+
+```
+
+``` {r}
+
+read_function <- function(path = "data/", pattern = "*.csv") {
+    files = list.files(path = "data/", pattern = "*.csv", full.names = TRUE)
+    lapply(files, read_csv) %>% bind_rows()
+}
+
+df <- read_function("data/")
+
+```
+
+```{r}
+
+mt_df <- mt_import_mousetrap(df) %>% 
+  mt_exclude_initiation() %>% 
+  mt_remap_symmetric() %>% 
+  mt_time_normalize(nsteps = 101)
+
+# plotting different trial types trajectories over time
+mt_plot_riverbed(mt_df, facet_col = "correct")
+
+df_agg <- mt_aggregate(mt_df, use = "tn_trajectories", use2_variables = "correct")
+
+ggplot(df_agg, aes(x = steps, y = xpos, color = correct)) +
+  geom_line()
+
+
+```
+
+
